@@ -22,6 +22,17 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
+	
+	@ExceptionHandler(ResourceExistException.class)
+    public ResponseEntity<ErrorResponse> handleCartExistException(ResourceExistException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            400,
+            ex.getMessage(),
+            "The requested resource already exists.",
+            LocalDateTime.now()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {

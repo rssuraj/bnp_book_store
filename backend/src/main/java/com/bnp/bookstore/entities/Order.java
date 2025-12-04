@@ -2,6 +2,7 @@ package com.bnp.bookstore.entities;
 
 import java.util.UUID;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,7 +27,7 @@ public class Order {
 	@Column(columnDefinition = "uuid", updatable = false, nullable = false)
 	private UUID id;
 	
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "cart_id", nullable = false)
 	private Cart cart;
 	

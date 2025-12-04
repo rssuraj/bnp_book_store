@@ -12,14 +12,14 @@ import com.bnp.bookstore.services.UserService;
 
 import lombok.AllArgsConstructor;
 
-@RestController
+@RestController("/users")
 @AllArgsConstructor
 public class UserController {
 
 	private final UserService userService;
 	
-	@GetMapping("/user/{userId}")
-	public ResponseEntity<User> getUser(@PathVariable("userId") Long userId) throws ResourceNotFoundException {
+	@GetMapping("/{userId}")
+	public ResponseEntity<User> getUser(@PathVariable Long userId) throws ResourceNotFoundException {
 		User user = userService.getUserById(userId);
 		
 		return new ResponseEntity<User>(user, HttpStatus.OK);
