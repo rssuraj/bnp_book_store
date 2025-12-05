@@ -27,35 +27,34 @@ class CartServiceTest {
 
     @InjectMocks
     private CartService cartService;
-    
-    User user;
-    
-    boolean mockRegistered = false;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        user = new User();
-        if(!mockRegistered) {
-        	mockStatic(SecurityConfig.class).when(SecurityConfig::getAuthenticatedUser).thenReturn(user);
-        	mockRegistered = true;
-        }
     }
 
     @Test
     void testGetCartByUser_NoCart_ReturnsEmptyResponse() throws ResourceNotFoundException {
         // Setup mocks
+    	User user = new User();
+    	MockedStatic<SecurityConfig> config = Mockito.mockStatic(SecurityConfig.class);
+    	config.when(SecurityConfig::getAuthenticatedUser).thenReturn(user);
         when(cartRepository.findByUserAndIsComplete(user, false)).thenReturn(Optional.empty());
 
         CartResponse response = cartService.getCartByUser();
         assertNull(response.cart());
         assertNull(response.cartItems());
+        
+        config.close();
     }
 
     @Test
     void testCreateUserCart_NewCart_Success() throws Exception, ResourceExistException, ResourceNotFoundException {
         Book book = new Book();
         CartRequest request = new CartRequest(1L, 2L);
+        User user = new User();
+        MockedStatic<SecurityConfig> config = Mockito.mockStatic(SecurityConfig.class);
+    	config.when(SecurityConfig::getAuthenticatedUser).thenReturn(user);
         when(cartRepository.findByUserAndIsComplete(user, false)).thenReturn(Optional.empty());
         when(bookService.getBook(1L)).thenReturn(book);
 
@@ -73,6 +72,8 @@ class CartServiceTest {
         CartResponse response = cartService.createUserCart(request);
         assertNotNull(response.cart());
         assertEquals(1, response.cartItems().size());
+        
+        config.close();
     }
 
     // Add similar tests for updateUserCart and completeUserCart
