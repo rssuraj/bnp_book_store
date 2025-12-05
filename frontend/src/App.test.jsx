@@ -7,57 +7,87 @@ vi.mock('./services/api');
 
 describe('App Integration Tests', () => {
   const mockBooks = [
-    { id: 1, title: 'Test Book 1', author: 'Author 1', price: 19.99, quantity: 5 },
-    { id: 2, title: 'Test Book 2', author: 'Author 2', price: 24.99, quantity: 3 },
+    {
+      id: 1,
+      title: "Test Book 1",
+      isbn: "123",
+      authors: [{ name: "Author 1" }],
+      price: 19.99,
+      availableQuantity: 5,
+    },
+    {
+      id: 2,
+      title: "Test Book 2",
+      isbn: "456",
+      authors: [{ name: "Author 2" }],
+      price: 24.99,
+      availableQuantity: 3,
+    },
   ];
+
+  const mockToken = "mock-jwt-token";
+
+  const setupAuthenticatedUser = () => {
+    localStorage.setItem("jwtToken", mockToken);
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    
-    api.fetchCart.mockResolvedValue({ items: [], total: 0 });
-    api.fetchBooks.mockResolvedValue({
-      books: mockBooks,
-      total: 2,
-      page: 1,
-      totalPages: 1,
-    });
+
+    api.fetchCart.mockResolvedValue({ cartItems: [], cart: {} });
+    api.fetchBooks.mockResolvedValue(mockBooks);
+    api.login.mockResolvedValue({ token: mockToken });
   });
 
-  it('should render the app with header and book list', async () => {
+  it("should render the app with header and book list", async () => {
+    setupAuthenticatedUser();
     render(<App />);
 
-    expect(screen.getByText('📚 Bookstore')).toBeInTheDocument();
-    
+    expect(screen.getByText("📚 Bookstore")).toBeInTheDocument();
+
     await waitFor(() => {
-      expect(screen.getByText('Test Book 1')).toBeInTheDocument();
+      expect(screen.getByText("Test Book 1")).toBeInTheDocument();
     });
   });
 
-  it('should allow adding books to cart', async () => {
+  it("should allow adding books to cart", async () => {
+    setupAuthenticatedUser();
+
     api.addToCart.mockResolvedValue({
-      items: [{ bookId: 1, title: 'Test Book 1', author: 'Author 1', price: 19.99, quantity: 1 }],
-      total: 19.99,
+      cartItems: [
+        {
+          book: { id: 1, title: "Test Book 1", price: 19.99 },
+          purchasedQuantity: 1,
+        },
+      ],
+      cart: { id: 1 },
     });
 
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByText('Test Book 1')).toBeInTheDocument();
+      expect(screen.getByText("Test Book 1")).toBeInTheDocument();
     });
 
-    const addButtons = screen.getAllByRole('button', { name: /add to cart/i });
+    const addButtons = screen.getAllByRole("button", { name: /add to cart/i });
     fireEvent.click(addButtons[0]);
 
     await waitFor(() => {
-      expect(api.addToCart).toHaveBeenCalledWith(1, 1);
+      expect(api.addToCart).toHaveBeenCalledWith(mockToken, 1, 1);
     });
   });
 
-  it('should navigate to cart view', async () => {
+  it("should navigate to cart view", async () => {
+    setupAuthenticatedUser();
     render(<App />);
 
-    const cartButton = screen.getByRole('button', { name: /cart/i });
+    await waitFor(() => {
+      expect(screen.getByText("Test Book 1")).toBeInTheDocument();
+    });
+
+    // Use more specific selector - the header Cart button starts with "Cart" (not "Add to Cart")
+    const cartButton = screen.getByRole("button", { name: /^cart/i });
     fireEvent.click(cartButton);
 
     await waitFor(() => {
@@ -65,12 +95,17 @@ describe('App Integration Tests', () => {
     });
   });
 
-  it('should display cart item count in header', async () => {
+  it("should display cart item count in header", async () => {
+    setupAuthenticatedUser();
+
     api.fetchCart.mockResolvedValue({
-      items: [
-        { bookId: 1, title: 'Test Book 1', author: 'Author 1', price: 19.99, quantity: 2 },
+      cartItems: [
+        {
+          book: { id: 1, title: "Test Book 1", price: 19.99 },
+          purchasedQuantity: 2,
+        },
       ],
-      total: 39.98,
+      cart: { id: 1 },
     });
 
     render(<App />);
