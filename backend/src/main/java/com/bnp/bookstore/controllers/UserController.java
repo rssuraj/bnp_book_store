@@ -41,7 +41,7 @@ public class UserController {
 	}
 	
 	@PostMapping("/users/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
 
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
@@ -57,7 +57,7 @@ public class UserController {
     }
 	
 	@PostMapping("/users/register")
-    public ResponseEntity<?> register(@RequestBody UserRequest request) {
+    public ResponseEntity<User> register(@RequestBody UserRequest request) {
         
         User user = userService.createUser(request);
 

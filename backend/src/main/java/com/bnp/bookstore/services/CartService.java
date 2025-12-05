@@ -1,9 +1,12 @@
 package com.bnp.bookstore.services;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.bnp.bookstore.config.security.SecurityConfig;
 import com.bnp.bookstore.entities.Book;
@@ -13,6 +16,8 @@ import com.bnp.bookstore.entities.User;
 import com.bnp.bookstore.exceptions.ResourceNotFoundException;
 import com.bnp.bookstore.exceptions.ResourceExistException;
 import com.bnp.bookstore.models.CartRequest;
+import com.bnp.bookstore.models.CartResponse;
+import com.bnp.bookstore.repositories.CartItemRepository;
 import com.bnp.bookstore.repositories.CartRepository;
 
 import lombok.AllArgsConstructor;
@@ -23,78 +28,95 @@ public class CartService {
 
 	private final CartRepository cartRepository;
 	
+	private final CartItemRepository cartItemRepository;
+	
 	private final BookService bookService;
 	
-	public Optional<Cart> getCartByUser() throws ResourceNotFoundException {
+	public CartResponse getCartByUser() throws ResourceNotFoundException {
 		
 		User user = SecurityConfig.getAuthenticatedUser();
 		
-		return cartRepository.findByUserAndIsComplete(user, false);
+		Optional<Cart> cart = cartRepository.findByUserAndIsComplete(user, false);
+		
+		if(cart.isEmpty())
+			return new CartResponse(null, null);
+		
+		Set<CartItem> items = cartItemRepository.findByCartId(cart.get().getId());
+		
+		return new CartResponse(cart.get(), items);
 	}
 	
-	public Cart createUserCart(CartRequest request) throws ResourceExistException, ResourceNotFoundException {
+	public CartResponse createUserCart(CartRequest request) throws ResourceExistException, ResourceNotFoundException {
 		
 		User user = SecurityConfig.getAuthenticatedUser();
 		
 		Optional<Cart> cart = cartRepository.findByUserAndIsComplete(user, false);
 		
 		if(cart.isPresent())
-			throw new ResourceExistException("Cart already exists for the user");
+			return new CartResponse(null, null); 
 		
 		Book book = bookService.getBook(request.bookId());
 		
 		Cart newCart = new Cart();
 		newCart.setIsComplete(false);
 		newCart.setUser(user);
+		newCart = cartRepository.save(newCart);
+		
 		CartItem newCartItem = new CartItem();
 		newCartItem.setBook(book);
 		newCartItem.setPurchasedQuantity(request.purchaseQuantity());
-		newCart.setCartItems(Set.of(newCartItem));
+		newCartItem.setCart(newCart);
+		newCartItem = cartItemRepository.save(newCartItem);
 		
-		return cartRepository.save(newCart);
+		
+		return new CartResponse(newCart, Set.of(newCartItem));
 	}
 	
-	public Cart updateUserCart(CartRequest request) throws ResourceNotFoundException {
+	public CartResponse updateUserCart(CartRequest request) throws ResourceNotFoundException {
 		
-		Optional<Cart> existingCart = this.getCartByUser();
+		CartResponse existingCart = this.getCartByUser();
 		
 		Book book = bookService.getBook(request.bookId());
 		
-		Cart updatedCart = existingCart.get();
+		Cart updatedCart = existingCart.cart();
 		
-		Set<CartItem> items = updatedCart.getCartItems();
+		Set<CartItem> items = existingCart.cartItems();
 		
-		// Remove item if quantity 0
-		if(request.purchaseQuantity() == 0)
-			items.removeIf(i -> i.getBook().getId() == book.getId());
-		else
-			items.stream().filter(i -> i.getBook().getId() == book.getId()).findAny().ifPresent(i -> i.setPurchasedQuantity(request.purchaseQuantity()));
+		CartItem cI = items.stream().filter(i -> i.getBook().getId() == book.getId()).findFirst().orElse(null);
 		
-		updatedCart.setCartItems(items);
+		if(cI != null) {
 		
-		return cartRepository.save(updatedCart);
+			// Remove item if quantity 0
+			if(request.purchaseQuantity() == 0)
+				items.removeIf(i -> i.getBook().getId() == book.getId());
+			else
+				items.stream().filter(i -> i.getBook().getId() == book.getId()).findAny().ifPresent(i -> i.setPurchasedQuantity(request.purchaseQuantity()));
+		} else {
+			CartItem newCartItem = new CartItem();
+			newCartItem.setBook(book);
+			newCartItem.setPurchasedQuantity(request.purchaseQuantity());
+			newCartItem.setCart(updatedCart);
+			items.add(newCartItem);
+		}
+		
+		// Delete Cart if items are 0
+		if(CollectionUtils.isEmpty(items)) {
+			cartRepository.delete(existingCart.cart());
+			return new CartResponse(null, Set.of());
+		} else {
+			
+			List<CartItem> udpatedItems = cartItemRepository.saveAll(items);
+			return new CartResponse(updatedCart, new HashSet<CartItem>(udpatedItems));
+		}
 	}
 	
 	public Cart completeUserCart() throws ResourceNotFoundException {
 		
-		Optional<Cart> existingCart = this.getCartByUser();
+		CartResponse existingCart = this.getCartByUser();
 		
-		if(existingCart.isEmpty())
-			throw new ResourceNotFoundException("Cart not found for the user");
-		
-		Cart updatedCart = existingCart.get();
+		Cart updatedCart = existingCart.cart();
 		updatedCart.setIsComplete(true);
 		
 		return cartRepository.save(updatedCart);
-	}
-	
-	public void deleteUserCart() throws ResourceNotFoundException {
-		
-		Optional<Cart> existingCart = this.getCartByUser();
-		
-		if(existingCart.isEmpty())
-			throw new ResourceNotFoundException("Cart not found for the user");
-		
-		cartRepository.delete(existingCart.get());
 	}
 }

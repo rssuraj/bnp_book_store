@@ -1,5 +1,6 @@
 package com.bnp.bookstore.services;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -24,6 +25,10 @@ public class BookService {
 		Pageable pageable = PageRequest.of(page, pageSize);
 		
 		return bookRepository.findAll(pageable);
+	}
+	
+	public List<Book> getAll() {
+		return bookRepository.findAll();
 	}
 	
 	public Book getBook(Long bookId) throws ResourceNotFoundException {
