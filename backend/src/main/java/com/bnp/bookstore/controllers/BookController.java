@@ -12,13 +12,13 @@ import com.bnp.bookstore.services.BookService;
 
 import lombok.AllArgsConstructor;
 
-@RestController("/books")
+@RestController
 @AllArgsConstructor
 public class BookController {
 
 	private final BookService bookService;
 	
-	@GetMapping
+	@GetMapping("/books")
 	public ResponseEntity<Page<Book>> getBooks(
 			@RequestParam(defaultValue = "0") int page, 
 			@RequestParam(defaultValue = "10") int pageSize) {

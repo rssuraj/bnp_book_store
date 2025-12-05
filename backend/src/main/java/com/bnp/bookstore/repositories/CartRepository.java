@@ -9,5 +9,5 @@ import com.bnp.bookstore.entities.User;
 
 public interface CartRepository extends JpaRepository<Cart, Long> {
 	
-	public Optional<Cart> findByUserAndIsComplete(User user, Boolean isComplete);
+	Optional<Cart> findByUserAndIsComplete(User user, Boolean isComplete);
 }

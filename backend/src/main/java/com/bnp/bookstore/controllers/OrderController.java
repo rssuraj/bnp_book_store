@@ -18,35 +18,34 @@ import com.bnp.bookstore.services.OrderService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.AllArgsConstructor;
 
-@RestController("/orders")
+@RestController
 @AllArgsConstructor
 public class OrderController {
 
 	private final OrderService orderService;
 	
-	@GetMapping("/{userId}")
+	@GetMapping("/orders")
 	public ResponseEntity<Page<Order>> getOrders(
 			@RequestParam(defaultValue = "0") int page, 
-			@RequestParam(defaultValue = "10") int pageSize, 
-			@PathVariable Long userId) {
+			@RequestParam(defaultValue = "10") int pageSize) {
 		
-		Page<Order> orders = orderService.getOrders(page, pageSize, userId);
+		Page<Order> orders = orderService.getOrders(page, pageSize);
 		
 		return new ResponseEntity<Page<Order>>(orders, HttpStatus.OK);
 	}
 	
-	@PostMapping("/{userId}")
-	public ResponseEntity<Order> createOrder(@PathVariable Long userId, @RequestBody OrderRequest request) throws ResourceNotFoundException {
+	@PostMapping("/orders")
+	public ResponseEntity<Order> createOrder(@RequestBody OrderRequest request) throws ResourceNotFoundException {
 
-		Order order = orderService.createOrder(request, userId);
+		Order order = orderService.createOrder(request);
 		
 		return new ResponseEntity<Order>(order, HttpStatus.CREATED);
 	}
 	
-	@PutMapping("/{userId}")
-	public ResponseEntity<Order> updateOrder(@PathVariable Long userId, @RequestBody OrderRequest request) throws ResourceNotFoundException {
+	@PutMapping("/orders/{orderId}")
+	public ResponseEntity<Order> updateOrder(@PathVariable Long orderId, @RequestBody OrderRequest request) throws ResourceNotFoundException {
 
-		Order order = orderService.updateOrder(request, userId);
+		Order order = orderService.updateOrder(request, orderId);
 		
 		return new ResponseEntity<Order>(order, HttpStatus.OK);
 	}

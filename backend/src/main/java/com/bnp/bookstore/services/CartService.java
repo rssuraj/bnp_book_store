@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
+import com.bnp.bookstore.config.security.SecurityConfig;
 import com.bnp.bookstore.entities.Book;
 import com.bnp.bookstore.entities.Cart;
 import com.bnp.bookstore.entities.CartItem;
@@ -22,25 +23,18 @@ public class CartService {
 
 	private final CartRepository cartRepository;
 	
-	private final UserService userService;
-	
 	private final BookService bookService;
 	
-	public Cart getCartByUser(Long userId) throws ResourceNotFoundException {
+	public Optional<Cart> getCartByUser() throws ResourceNotFoundException {
 		
-		User user = userService.getUserById(userId);
+		User user = SecurityConfig.getAuthenticatedUser();
 		
-		Optional<Cart> cart = cartRepository.findByUserAndIsComplete(user, false);
-		
-		if(cart.isEmpty())
-			throw new ResourceNotFoundException("Cart not found for the user");
-		
-		return cart.get();
+		return cartRepository.findByUserAndIsComplete(user, false);
 	}
 	
-	public Cart createUserCart(CartRequest request, Long userId) throws ResourceExistException, ResourceNotFoundException {
+	public Cart createUserCart(CartRequest request) throws ResourceExistException, ResourceNotFoundException {
 		
-		User user = userService.getUserById(userId);
+		User user = SecurityConfig.getAuthenticatedUser();
 		
 		Optional<Cart> cart = cartRepository.findByUserAndIsComplete(user, false);
 		
@@ -49,23 +43,26 @@ public class CartService {
 		
 		Book book = bookService.getBook(request.bookId());
 		
-		return cartRepository.save(Cart.builder()
-				.isComplete(false)
-				.user(user)
-				.cartItems(Set.of(CartItem.builder()
-						.book(book)
-						.purchasedQuantity(request.purchaseQuantity())
-						.build()))
-				.build());
+		Cart newCart = new Cart();
+		newCart.setIsComplete(false);
+		newCart.setUser(user);
+		CartItem newCartItem = new CartItem();
+		newCartItem.setBook(book);
+		newCartItem.setPurchasedQuantity(request.purchaseQuantity());
+		newCart.setCartItems(Set.of(newCartItem));
+		
+		return cartRepository.save(newCart);
 	}
 	
-	public Cart updateUserCart(CartRequest request, Long userId) throws ResourceNotFoundException {
+	public Cart updateUserCart(CartRequest request) throws ResourceNotFoundException {
 		
-		Cart existingCart = this.getCartByUser(userId);
+		Optional<Cart> existingCart = this.getCartByUser();
 		
 		Book book = bookService.getBook(request.bookId());
 		
-		Set<CartItem> items = existingCart.getCartItems();
+		Cart updatedCart = existingCart.get();
+		
+		Set<CartItem> items = updatedCart.getCartItems();
 		
 		// Remove item if quantity 0
 		if(request.purchaseQuantity() == 0)
@@ -73,27 +70,31 @@ public class CartService {
 		else
 			items.stream().filter(i -> i.getBook().getId() == book.getId()).findAny().ifPresent(i -> i.setPurchasedQuantity(request.purchaseQuantity()));
 		
-		existingCart.setCartItems(items);
+		updatedCart.setCartItems(items);
 		
-		return cartRepository.save(existingCart);
+		return cartRepository.save(updatedCart);
 	}
 	
-	public Cart completeUserCart(Long userId) throws ResourceNotFoundException {
+	public Cart completeUserCart() throws ResourceNotFoundException {
 		
-		Cart existingCart = this.getCartByUser(userId);
+		Optional<Cart> existingCart = this.getCartByUser();
 		
-		existingCart.setIsComplete(true);
-		
-		return cartRepository.save(existingCart);
-	}
-	
-	public void deleteUserCart(Long userId) throws ResourceNotFoundException {
-		
-		Cart existingCart = this.getCartByUser(userId);
-		
-		if(existingCart == null)
+		if(existingCart.isEmpty())
 			throw new ResourceNotFoundException("Cart not found for the user");
 		
-		cartRepository.delete(existingCart);
+		Cart updatedCart = existingCart.get();
+		updatedCart.setIsComplete(true);
+		
+		return cartRepository.save(updatedCart);
+	}
+	
+	public void deleteUserCart() throws ResourceNotFoundException {
+		
+		Optional<Cart> existingCart = this.getCartByUser();
+		
+		if(existingCart.isEmpty())
+			throw new ResourceNotFoundException("Cart not found for the user");
+		
+		cartRepository.delete(existingCart.get());
 	}
 }

@@ -1,21 +1,18 @@
 package com.bnp.bookstore.entities;
 
-import java.util.Set;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "authors")
-@Builder
+@NoArgsConstructor
 @Getter
 @Setter
 public class Author {
@@ -38,8 +35,5 @@ public class Author {
 	
 	@Column(nullable = true)
 	private String gender;
-	
-	@ManyToMany(mappedBy = "authors")
-	private Set<Book> books;
 	
 }

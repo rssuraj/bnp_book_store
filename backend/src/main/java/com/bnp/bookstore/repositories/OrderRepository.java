@@ -9,5 +9,5 @@ import com.bnp.bookstore.entities.User;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 	
-	public Optional<Order> findByUserAndPaymentComplete(User user, Boolean paymentComplete);
+	Optional<Order> findByUserAndPaymentComplete(User user, Boolean paymentComplete);
 }

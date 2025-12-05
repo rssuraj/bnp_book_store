@@ -1,10 +1,11 @@
 package com.bnp.bookstore.controllers;
 
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,40 +19,44 @@ import com.bnp.bookstore.services.CartService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.AllArgsConstructor;
 
-@RestController("/carts")
+@RestController
 @AllArgsConstructor
 public class CartController {
 
 	private final CartService cartService;
 	
-	@GetMapping("/{userId}")
-	public ResponseEntity<Cart> getCartByUser(@PathVariable Long userId) throws ResourceNotFoundException {
+	@GetMapping("/carts")
+	public ResponseEntity<Cart> getCartByUser() throws ResourceNotFoundException {
 		
-		Cart cart = cartService.getCartByUser(userId);
+		Optional<Cart> cart = cartService.getCartByUser();
 		
-		return new ResponseEntity<Cart>(cart, HttpStatus.OK);
+		if(cart.isEmpty())
+			return new ResponseEntity<Cart>(HttpStatus.NOT_FOUND);
+	
+		return new ResponseEntity<Cart>(cart.get(), HttpStatus.OK);
+		
 	}
 	
-	@PostMapping("/{userId}")
-	public ResponseEntity<Cart> createUserCart(@PathVariable Long userId, @RequestBody CartRequest request) throws ResourceExistException, ResourceNotFoundException {
+	@PostMapping("/carts")
+	public ResponseEntity<Cart> createUserCart(@RequestBody CartRequest request) throws ResourceExistException, ResourceNotFoundException {
 
-		Cart cart = cartService.createUserCart(request, userId);
+		Cart cart = cartService.createUserCart(request);
 		
 		return new ResponseEntity<Cart>(cart, HttpStatus.CREATED);
 	}
 	
-	@PutMapping("/{userId}")
-	public ResponseEntity<Cart> updateUserCart(@PathVariable Long userId, @RequestBody CartRequest request) throws ResourceExistException, ResourceNotFoundException {
+	@PutMapping("/carts")
+	public ResponseEntity<Cart> updateUserCart(@RequestBody CartRequest request) throws ResourceExistException, ResourceNotFoundException {
 
-		Cart cart = cartService.updateUserCart(request, userId);
+		Cart cart = cartService.updateUserCart(request);
 		
 		return new ResponseEntity<Cart>(cart, HttpStatus.OK);
 	}
 	
-	@DeleteMapping("/{userId}")
-	public ResponseEntity<String> deleteUserCart(@PathVariable Long userId) throws ResourceExistException, ResourceNotFoundException {
+	@DeleteMapping("/carts")
+	public ResponseEntity<String> deleteUserCart() throws ResourceExistException, ResourceNotFoundException {
 
-		cartService.deleteUserCart(userId);
+		cartService.deleteUserCart();
 		
 		return new ResponseEntity<String>("User Cart removed successfully", HttpStatus.OK);
 	}

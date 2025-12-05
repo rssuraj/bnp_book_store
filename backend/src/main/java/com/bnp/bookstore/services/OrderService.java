@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.bnp.bookstore.config.security.SecurityConfig;
 import com.bnp.bookstore.entities.Cart;
 import com.bnp.bookstore.entities.Order;
 import com.bnp.bookstore.entities.User;
@@ -22,37 +23,34 @@ public class OrderService {
 
 	private final OrderRepository orderRepository;
 	
-	private final UserService userService;
-	
 	private final CartService cartService;
 	
 	// TODO: Use userId to fetch orders by User
-	public Page<Order> getOrders(int page, int pageSize, Long userId) {
+	public Page<Order> getOrders(int page, int pageSize) {
 		
 		Pageable pageable = PageRequest.of(page, pageSize);
 		
 		return orderRepository.findAll(pageable);
 	}
 	
-	public Order createOrder(OrderRequest request, Long userId) throws ResourceNotFoundException {
+	public Order createOrder(OrderRequest request) throws ResourceNotFoundException {
 	
-		User user = userService.getUserById(userId);
+		User user = SecurityConfig.getAuthenticatedUser();
 		
 		// Complete the cart before creating the order
-		Cart cart = cartService.completeUserCart(request.cartId());
+		Cart cart = cartService.completeUserCart();
 		
-		return orderRepository.save(Order.builder()
-				.cart(cart)
-				.user(user)
-				.paymentComplete(false)
-				.build());
+		Order newOrder = new Order();
+		newOrder.setCart(cart);
+		newOrder.setUser(user);
+		newOrder.setPaymentComplete(false);
+		
+		return orderRepository.save(newOrder);
 	}
 	
-	public Order updateOrder(OrderRequest request, Long userId) throws ResourceNotFoundException {
+	public Order updateOrder(OrderRequest request, Long orderId) throws ResourceNotFoundException {
 		
-		User user = userService.getUserById(userId);
-		
-		Optional<Order> order = orderRepository.findByUserAndPaymentComplete(user, false);
+		Optional<Order> order = orderRepository.findById(orderId);
 		
 		if(order.isEmpty())
 			throw new ResourceNotFoundException("Active order not found for user");
