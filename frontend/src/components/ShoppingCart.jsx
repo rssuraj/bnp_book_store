@@ -8,8 +8,6 @@ const ShoppingCart = ({ items, total, onUpdateQuantity, onRemoveItem, onCheckout
     );
   }
 
-  console.log(items);
-
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Shopping Cart</h2>
@@ -23,20 +21,20 @@ const ShoppingCart = ({ items, total, onUpdateQuantity, onRemoveItem, onCheckout
               <h3 className="text-lg font-semibold text-gray-800">{item.book.title}</h3>
               <p className="text-gray-600 text-sm">{item.book.isbn}</p>
               <p className="text-gray-600 text-sm">{item.book.authors.map(a => a.name).join(',')}</p>
-              <p className="text-green-600 font-bold">${item.book.price}</p>
+              <p className="text-green-600 font-bold">€{item.book.price}</p>
             </div>
             
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => onUpdateQuantity(item.book.id, Math.max(1, item.purchasedQuantity - 1))}
+                  onClick={() => onUpdateQuantity(item.book, Math.max(1, item.purchasedQuantity - 1))}
                   className="w-8 h-8 bg-gray-200 rounded hover:bg-gray-300 font-bold"
                 >
                   -
                 </button>
                 <span className="w-12 text-center font-semibold">{item.purchasedQuantity}</span>
                 <button
-                  onClick={() => onUpdateQuantity(item.book.id, item.purchasedQuantity + 1)}
+                  onClick={() => onUpdateQuantity(item.book, item.purchasedQuantity + 1)}
                   className="w-8 h-8 bg-gray-200 rounded hover:bg-gray-300 font-bold"
                 >
                   +
@@ -44,7 +42,7 @@ const ShoppingCart = ({ items, total, onUpdateQuantity, onRemoveItem, onCheckout
               </div>
               
               <div className="text-right min-w-[80px]">
-                <p className="font-bold text-lg">${(item.book.price * item.purchasedQuantity).toFixed(2)}</p>
+                <p className="font-bold text-lg">€{(item.book.price * item.purchasedQuantity).toFixed(2)}</p>
               </div>
               
               <button
@@ -61,7 +59,7 @@ const ShoppingCart = ({ items, total, onUpdateQuantity, onRemoveItem, onCheckout
       <div className="mt-6 pt-4 border-t">
         <div className="flex justify-between items-center mb-4">
           <span className="text-xl font-bold text-gray-800">Total:</span>
-          <span className="text-2xl font-bold text-green-600">${total.toFixed(2)}</span>
+          <span className="text-2xl font-bold text-green-600">€{total.toFixed(2)}</span>
         </div>
         
         <button

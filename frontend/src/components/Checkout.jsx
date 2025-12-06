@@ -61,7 +61,7 @@ const Checkout = ({ items, total, onComplete, onCancel }) => {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold">${(item.book.price * item.purchasedQuantity).toFixed(2)}</p>
+                  <p className="font-bold">€{(item.book.price * item.purchasedQuantity).toFixed(2)}</p>
                 </div>
               </div>
             ))}
@@ -69,7 +69,7 @@ const Checkout = ({ items, total, onComplete, onCancel }) => {
           <div className="mt-4 pt-4 border-t">
             <div className="flex justify-between items-center">
               <span className="text-xl font-bold">Total:</span>
-              <span className="text-2xl font-bold text-green-600">${total.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-green-600">€{total.toFixed(2)}</span>
             </div>
           </div>
         </div>

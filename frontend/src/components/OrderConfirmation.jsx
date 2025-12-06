@@ -34,12 +34,12 @@ const OrderConfirmation = ({ orderId, items, total, onBackToStore }) => {
                 <p className="font-semibold">{item.book.title}</p>
                 <p className="text-sm text-gray-600">Qty: {item.purchasedQuantity}</p>
               </div>
-              <p className="font-bold">${(item.book.price * item.purchasedQuantity).toFixed(2)}</p>
+              <p className="font-bold">€{(item.book.price * item.purchasedQuantity).toFixed(2)}</p>
             </div>
           ))}
           <div className="flex justify-between py-3 mt-2">
             <span className="font-bold text-lg">Total:</span>
-            <span className="font-bold text-lg text-green-600">${total.toFixed(2)}</span>
+            <span className="font-bold text-lg text-green-600">€{total.toFixed(2)}</span>
           </div>
         </div>
         

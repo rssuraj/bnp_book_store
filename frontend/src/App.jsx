@@ -6,6 +6,7 @@ import OrderConfirmation from './components/OrderConfirmation';
 import { addToCart, fetchCart, updateCartItem, createOrder, completeOrder, register, login } from './services/api';
 import Login from './components/Login';
 import Register from './components/Register';
+import { toast } from 'react-toastify';
 
 const App = () => {
     const [cart, setCart] = useState({});
@@ -27,9 +28,10 @@ const App = () => {
       try {
         await register(userData);
         setCurrentView('login');
+        toast.success('User Registered successfully');
       } catch (error) {
         console.error('Error creating user:', error);
-        alert('Error creating user');    
+        toast.error('Error creating user');
       }
     };
 
@@ -41,7 +43,7 @@ const App = () => {
         setCurrentView('books');
       } catch (error) {
         console.error('Error logging user:', error);
-        alert('Error logging user');    
+        toast.error('Error logging user');    
       }
     }
   
@@ -53,6 +55,7 @@ const App = () => {
         setCartTotal(cart.cartItems.reduce((sum, item) => sum + (item.purchasedQuantity * item.book.price), 0));
       } catch (error) {
         console.error('Error loading cart:', error);
+        toast.error('Error loading cart');
       }
     };
   
@@ -60,30 +63,31 @@ const App = () => {
       let cartItem = cartItems.find(ci => ci.book.id == book.id);
       if(cartItem || cartItems.length > 0) {
         if(!cartItem) cartItem = { purchasedQuantity: 0 };
-        handleUpdateQuantity(book.id, cartItem.purchasedQuantity + 1);
+        handleUpdateQuantity(book, cartItem.purchasedQuantity + 1);
       } else {
         try {
           const cart = await addToCart(token, book.id, 1);
           setCartItems(cart.cartItems);
           setCart(cart.cart || {});
           setCartTotal(cart.cartItems.reduce((sum, item) => sum + (item.purchasedQuantity * item.book.price), 0));
-          alert(`${book.title} added to cart!`);
+          toast.success(`${book.title} added to cart!`);
         } catch (error) {
           console.error('Error adding to cart:', error);
-          alert('Failed to add item to cart');
+          toast.error('Failed to add item to cart');
         }
       }
     };
   
-    const handleUpdateQuantity = async (bookId, quantity) => {
+    const handleUpdateQuantity = async (book, quantity) => {
       try {
-        const cart = await updateCartItem(token, bookId, quantity);
+        const cart = await updateCartItem(token, book.id, quantity);
         setCartItems(cart.cartItems);
         setCart(cart.cart || {});
         setCartTotal(cart.cartItems.reduce((sum, item) => sum + (item.purchasedQuantity * item.book.price), 0));
+        toast.success(`${book.title} updated in cart`);
       } catch (error) {
         console.error('Error updating quantity:', error);
-        alert('Failed to update quantity');
+        toast.error('Failed to update quantity');
       }
     };
   
@@ -93,9 +97,10 @@ const App = () => {
         setCartItems(cart.cartItems);
         setCart(cart.cart || {});
         setCartTotal(cart.cartItems.reduce((sum, item) => sum + (item.purchasedQuantity * item.book.price), 0));
+        toast.success(`${item.book.title} removed from cart`);
       } catch (error) {
         console.error('Error removing item:', error);
-        alert('Failed to remove item');
+        toast.error('Failed to remove item');
       }
     };
   
@@ -107,7 +112,7 @@ const App = () => {
         setCurrentView('checkout');
       } catch (error) {
         console.error('Error creating order:', error);
-        alert('Error creating order');
+        toast.error('Error creating order');
       }
     };
   
@@ -130,9 +135,10 @@ const App = () => {
         setCart({});
         setOrder({});
         setCurrentView('confirmation');
+        toast.success('Order completed');
       } catch (error) {
         console.error('Error completing order:', error);
-        throw error;
+        toast.error('Error completing order');
       }
     };
   
