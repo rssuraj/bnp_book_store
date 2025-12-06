@@ -1,6 +1,5 @@
 package com.bnp.bookstore.controllers;
 
-import com.bnp.bookstore.controllers.CartController;
 import com.bnp.bookstore.entities.Cart;
 import com.bnp.bookstore.exceptions.ResourceExistException;
 import com.bnp.bookstore.exceptions.ResourceNotFoundException;

@@ -10,7 +10,6 @@ import com.bnp.bookstore.exceptions.*;
 import com.bnp.bookstore.models.*;
 import com.bnp.bookstore.repositories.*;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -75,8 +74,5 @@ class CartServiceTest {
         
         config.close();
     }
-
-    // Add similar tests for updateUserCart and completeUserCart
-
 }
 

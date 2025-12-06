@@ -86,7 +86,6 @@ describe('App Integration Tests', () => {
       expect(screen.getByText("Test Book 1")).toBeInTheDocument();
     });
 
-    // Use more specific selector - the header Cart button starts with "Cart" (not "Add to Cart")
     const cartButton = screen.getByRole("button", { name: /^cart/i });
     fireEvent.click(cartButton);
 

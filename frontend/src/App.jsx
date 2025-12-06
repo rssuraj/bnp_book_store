@@ -25,6 +25,10 @@ const App = () => {
     }, [token]);
 
     const handleRegister = async (userData) => {
+      if(userData.password.length < 6) {
+        toast.error('The password must be atleast 6 characters');
+        return;
+      }
       try {
         await register(userData);
         setCurrentView('login');
@@ -178,6 +182,7 @@ const App = () => {
                   <button
                     onClick={() => setCurrentView('login')}
                     className="flex items-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-md font-semibold hover:bg-gray-100 transition-colors mr-2"
+                    disabled={token}
                   >
                     <svg 
                       fill="none"
