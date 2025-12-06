@@ -1,3 +1,8 @@
 package com.bnp.bookstore.models;
 
-public record CartRequest(Long bookId, Long purchaseQuantity) {}
+import jakarta.annotation.Nonnull;
+
+public record CartRequest(
+		@Nonnull Long bookId, 
+		@Nonnull Long purchaseQuantity
+) {}

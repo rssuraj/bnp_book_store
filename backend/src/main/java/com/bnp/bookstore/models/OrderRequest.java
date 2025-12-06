@@ -1,3 +1,8 @@
 package com.bnp.bookstore.models;
 
-public record OrderRequest(Long cartId, Boolean paymentComplete) {}
+import jakarta.annotation.Nonnull;
+
+public record OrderRequest(
+		@Nonnull Long cartId, 
+		@Nonnull Boolean paymentComplete
+) {}

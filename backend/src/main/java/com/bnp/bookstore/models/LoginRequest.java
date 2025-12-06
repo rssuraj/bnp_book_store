@@ -1,3 +1,8 @@
 package com.bnp.bookstore.models;
 
-public record LoginRequest(String username, String password) {}
+import jakarta.annotation.Nonnull;
+
+public record LoginRequest(
+		@Nonnull String username, 
+		@Nonnull String password
+) {}
